@@ -1,8 +1,8 @@
 from datetime import date
+from email.message import EmailMessage
 import constants as const
 import requests as req
 import argparse
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -11,15 +11,14 @@ def parse_args():
     return parser.parse_args()
 
 
-def login(credentials):
+def login():
     login_data = {
         "nombreUsuario": credentials.email,
         "password": credentials.passwd
     }
-    login_token = req.post(url=const.login_url,
+    token = req.post(url=const.login_url,
                            json=login_data).json()['token']
-    print('Login Ok')
-    return {'Authorization': 'Bearer ' + login_token}
+    return {'Authorization': f'Bearer {token}'}
 
 
 def get_dev_id(auth):
@@ -30,7 +29,7 @@ def load_hours(auth, dev_id):
     payload = [{
         "developerId": dev_id,
         "moduloId": const.dev_module_id,
-        "cantHoras": 8,
+        "cantHoras": const.hours,
         "descripcion": "",
         "tipoTareaId": const.dev_task_id,
         "ticketId": None,
@@ -42,9 +41,7 @@ def load_hours(auth, dev_id):
 
 if __name__ == '__main__':
     credentials = parse_args()
-    auth_token = login(credentials)
-
+    auth_token = login()
     dev_id = get_dev_id(auth_token)
-    success = load_hours(auth_token, dev_id).text
-
-    print(success)
+    result = load_hours(auth_token, dev_id)
+    print(result)
